@@ -3,15 +3,17 @@ import { SubscribeButton } from '../components/SubscribeButton/SubscribeButton'
 import styles from './home.module.scss'
 import { GetStaticProps } from 'next'
 import { stripe } from '../services/stripe'
+import { useSession, signIn, signOut } from 'next-auth/react'
 
-interface HomeProps{
-  product:{
+interface HomeProps {
+  product: {
     priceId: string;
     amount: number;
   }
 }
 
-export default function Home({product}: HomeProps) {
+export default function Home({ product }: HomeProps) {
+  const { data: session } = useSession();
   return (
     <>
       <Head>
@@ -26,7 +28,8 @@ export default function Home({product}: HomeProps) {
             Get access to all publication <br />
             <span>for {product.amount}/month</span>
           </p>
-          <SubscribeButton priceId={product.priceId}/>
+          <SubscribeButton
+            priceId={product.priceId} />
         </section>
 
         <img src="/images/girlReact.svg" alt="Girl Coding" />
@@ -45,16 +48,17 @@ export const getStaticProps: GetStaticProps = async () => {
     amount: new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
-    }).format((price.unit_amount /100))
-    
+    }).format((price.unit_amount / 100))
+
 
   }
-  
-  return{
-    props:{
+
+  return {
+    props: {
       product
     },
-    revalidate: 60*60*24 //24 hours
+    revalidate: 60 * 60 * 24 //24 hours
 
   }
+
 }
