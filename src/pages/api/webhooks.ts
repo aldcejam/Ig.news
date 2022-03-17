@@ -24,7 +24,9 @@ export const config = {
 }
 
 const relevantEvents = new Set([
-   'checkout.session.completed'
+   'checkout.session.completed',
+   'customer.subscription.cupdated',
+   'customer.subscription.deleted',
 ])
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
@@ -35,31 +37,45 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       let event: Stripe.Event
 
-      try{
-         event = stripe.webhooks.constructEvent(buf,secret, process.env.STRIPE_WEBHOOK_SECRET)
-      }catch(err){
+      try {
+         event = stripe.webhooks.constructEvent(buf, secret, process.env.STRIPE_WEBHOOK_SECRET)
+      } catch (err) {
          return res.status(400).send(`Webhook error: ${err.message}`)
       }
 
       const { type } = event;
-      
-      if(relevantEvents.has(type)){
-         try{
-            switch(type){
+
+      if (relevantEvents.has(type)) {
+         try {
+            switch (type) {
+               case 'customer.subscription.updated':
+               case 'customer.subscription.deleted':
+
+                  const subscription = event.data.object as Stripe.Subscription
+
+                  await saveSubscription(
+                     subscription.id,
+                     subscription.customer.toString(),
+                     false
+                  )
+
+                  break;
+
                case 'checkout.session.completed':
 
                   const checkoutSession = event.data.object as Stripe.Checkout.Session
 
                   await saveSubscription(
                      checkoutSession.subscription.toString(),
-                     checkoutSession.customer.toString()
+                     checkoutSession.customer.toString(),
+                     true
                   )
                   break;
                default:
                   throw new Error('unhandled event')
             }
-         }catch(err){
-            return res.json({error: 'Webhook Handeler failed'})
+         } catch (err) {
+            return res.json({ error: 'Webhook Handeler failed' })
          }
       }
 
