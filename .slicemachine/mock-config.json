@@ -1,0 +1,27 @@
+{
+  "_cts": {
+    "211": {},
+    "2004": {
+      "TItle": {
+        "config": {
+          "patternType": "HEADING",
+          "blocks": 1
+        }
+      },
+      "Content": {
+        "config": {
+          "patternType": "STORY",
+          "blocks": 11
+        }
+      }
+    }
+  },
+  "slices": {
+    "2004": {
+      "default": {
+        "items": {}
+      }
+    },
+    "9998": {}
+  }
+}
